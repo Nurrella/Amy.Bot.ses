@@ -31,7 +31,7 @@ client.once("ready", async () => {
       guildId: guild.id,
       adapterCreator: guild.voiceAdapterCreator,
       selfMute: true,
-      selfDeaf: false,
+      selfDeaf: true,
     });
 
     console.log(`${channel.name} kanalına giriş yapıldı.`);
