@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-const { Client, GatewayIntentBits } = require("discord.js");
+const { Client, GatewayIntentBits, ChannelType } = require("discord.js");
 const { joinVoiceChannel } = require("@discordjs/voice");
 
 const client = new Client({
@@ -13,13 +13,27 @@ const CHANNEL_ID = process.env.CHANNEL_ID;
 
 client.once("ready", async () => {
   console.log(`Giriş yapıldı: ${client.user.tag}`);
+  console.log("GUILD_ID:", GUILD_ID);
+  console.log("CHANNEL_ID:", CHANNEL_ID);
 
   try {
     const guild = await client.guilds.fetch(GUILD_ID);
-    const channel = await guild.channels.fetch(CHANNEL_ID);
+    console.log("Sunucu bulundu:", guild.name);
 
+    const channel = await guild.channels.fetch(CHANNEL_ID);
     if (!channel) {
-      console.log("Ses kanalı bulunamadı.");
+      console.log("Kanal bulunamadı.");
+      return;
+    }
+
+    console.log("Kanal bulundu:", channel.name);
+    console.log("Kanal tipi:", channel.type);
+
+    if (
+      channel.type !== ChannelType.GuildVoice &&
+      channel.type !== ChannelType.GuildStageVoice
+    ) {
+      console.log("Bu kanal ses kanalı değil.");
       return;
     }
 
@@ -27,13 +41,13 @@ client.once("ready", async () => {
       channelId: channel.id,
       guildId: guild.id,
       adapterCreator: guild.voiceAdapterCreator,
-      selfDeaf: true,
       selfMute: true,
+      selfDeaf: true,
     });
 
-    console.log(`${channel.name} kanalına giriş yapıldı.`);
+    console.log(`${channel.name} kanalına bağlanıldı.`);
   } catch (error) {
-    console.error("Ses kanalına girerken hata oluştu:", error);
+    console.error("Ses kanalına bağlanırken hata:", error);
   }
 });
 
