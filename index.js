@@ -67,3 +67,8 @@ process.on("unhandledRejection", console.error);
 process.on("uncaughtException", console.error);
 
 client.login(TOKEN);
+client.login(TOKEN);
+
+setInterval(() => {
+  console.log("Bot aktif...");
+}, 30000);
