@@ -1,7 +1,11 @@
 require("dotenv").config();
 
 const { Client, GatewayIntentBits, ChannelType } = require("discord.js");
-const { joinVoiceChannel } = require("@discordjs/voice");
+const {
+  joinVoiceChannel,
+  entersState,
+  VoiceConnectionStatus,
+} = require("@discordjs/voice");
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
@@ -13,15 +17,22 @@ const CHANNEL_ID = process.env.CHANNEL_ID;
 
 client.once("clientReady", async () => {
   console.log(`Giriş yapıldı: ${client.user.tag}`);
+  console.log(`GUILD_ID: ${GUILD_ID}`);
+  console.log(`CHANNEL_ID: ${CHANNEL_ID}`);
 
   try {
     const guild = await client.guilds.fetch(GUILD_ID);
+    console.log(`Sunucu bulundu: ${guild.name}`);
+
     const channel = await guild.channels.fetch(CHANNEL_ID);
 
     if (!channel) {
       console.log("Ses kanalı bulunamadı.");
       return;
     }
+
+    console.log(`Kanal bulundu: ${channel.name}`);
+    console.log(`Kanal tipi: ${channel.type}`);
 
     if (
       channel.type !== ChannelType.GuildVoice &&
@@ -31,7 +42,7 @@ client.once("clientReady", async () => {
       return;
     }
 
-    joinVoiceChannel({
+    const connection = joinVoiceChannel({
       channelId: channel.id,
       guildId: guild.id,
       adapterCreator: guild.voiceAdapterCreator,
@@ -39,22 +50,20 @@ client.once("clientReady", async () => {
       selfMute: true,
     });
 
-    console.log("Ses kanalına bağlandı.");
+    connection.on("stateChange", (oldState, newState) => {
+      console.log(`Bağlantı durumu: ${oldState.status} -> ${newState.status}`);
+    });
+
+    await entersState(connection, VoiceConnectionStatus.Ready, 20_000);
+    console.log("Ses kanalına başarıyla bağlandı.");
   } catch (error) {
-    console.error("Ses kanalına bağlanırken hata oluştu:", error);
+    console.error("Ses kanalına bağlanırken hata oluştu:");
+    console.error(error);
   }
 });
 
-client.on("error", (error) => {
-  console.error("Discord istemci hatası:", error);
-});
-
-process.on("unhandledRejection", (error) => {
-  console.error("Beklenmeyen Promise hatası:", error);
-});
-
-process.on("uncaughtException", (error) => {
-  console.error("Yakalanmayan hata:", error);
-});
+client.on("error", console.error);
+process.on("unhandledRejection", console.error);
+process.on("uncaughtException", console.error);
 
 client.login(TOKEN);
