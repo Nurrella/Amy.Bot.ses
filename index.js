@@ -40,19 +40,15 @@ async function connectToVoice() {
       channelId: channel.id,
       guildId: guild.id,
       adapterCreator: guild.voiceAdapterCreator,
-      selfMute: false,
-      selfDeaf: true,
+      selfDeaf: true
     });
 
     connection.on("stateChange", async (_, newState) => {
       console.log("Ses durumu:", newState.status);
 
       if (newState.status === VoiceConnectionStatus.Disconnected) {
-        console.log("Ses bağlantısı koptu, 5 saniye sonra tekrar denenecek...");
-
-        setTimeout(async () => {
-          await connectToVoice();
-        }, 5000);
+        console.log("Ses bağlantısı koptu, tekrar bağlanılıyor...");
+        setTimeout(connectToVoice, 5000);
       }
     });
 
@@ -60,10 +56,7 @@ async function connectToVoice() {
     console.log(`${channel.name} kanalına giriş yapıldı.`);
   } catch (error) {
     console.error("Ses kanalına girerken hata oluştu:", error);
-
-    setTimeout(async () => {
-      await connectToVoice();
-    }, 5000);
+    setTimeout(connectToVoice, 5000);
   }
 }
 
